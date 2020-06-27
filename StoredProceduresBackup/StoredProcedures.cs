@@ -26,7 +26,6 @@ namespace StoredProceduresBackup
 
         private void SaveToFiles()
         {
-            Console.WriteLine(System.IO.Directory.GetParent(AppContext.BaseDirectory));
             foreach (var procedure in Procedures)
             {
                 procedure.Refresh();
