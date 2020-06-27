@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-// using System.Data.SqlClient;
+﻿using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
-using System.IO;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
 namespace StoredProceduresBackup
 {
-    public class Program
+    public static class Program
     {
         private static List<ProcedureObject> _procedureObjects;
         private static Configuration _configuration;
@@ -33,7 +28,7 @@ namespace StoredProceduresBackup
             _storedProcedures = new StoredProcedures();
         }
         
-        static void Main(string[] args)
+        static void Main()
         {
             Prepare();
             ReadProceduresNames(_command);

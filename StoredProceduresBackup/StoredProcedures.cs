@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Management.Automation;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -11,12 +10,12 @@ namespace StoredProceduresBackup
     public class StoredProcedures
     {
         public List<StoredProcedure> Procedures { get; }
-        private string _directory { get; set; }
+        private string Directory { get; }
 
         public StoredProcedures()
         {
             Procedures = new List<StoredProcedure>();
-            _directory = Directory.GetParent(AppContext.BaseDirectory).FullName;
+            Directory = System.IO.Directory.GetParent(AppContext.BaseDirectory).FullName;
         }
 
         public void Save()
@@ -27,12 +26,12 @@ namespace StoredProceduresBackup
 
         private void SaveToFiles()
         {
-            Console.WriteLine(Directory.GetParent(AppContext.BaseDirectory));
+            Console.WriteLine(System.IO.Directory.GetParent(AppContext.BaseDirectory));
             foreach (var procedure in Procedures)
             {
                 procedure.Refresh();
                 var content = procedure.TextHeader + procedure.TextBody;
-                var path = $"{_directory}/StoredProcedures/{procedure.Name}.sql";
+                var path = $"{Directory}/StoredProcedures/{procedure.Name}.sql";
                 File.WriteAllText(path, content);
             }
         }
@@ -41,7 +40,7 @@ namespace StoredProceduresBackup
         {
             using (PowerShell powerShell = PowerShell.Create())
             {
-                powerShell.AddScript($"cd {_directory}/StoredProcedures/");
+                powerShell.AddScript($"cd {Directory}/StoredProcedures/");
                 powerShell.AddScript(@"git add *");
                 powerShell.AddScript($"git commit -m 'Timestamp {DateTime.Now.ToShortDateString()}'");
                 Collection<PSObject> results = powerShell.Invoke();
