@@ -12,30 +12,49 @@ namespace StoredProceduresBackup
 {
     public class Program
     {
-        private static IConfigurationRoot _configuration;
-        private static SqlConnection _connection;
+        private static List<ProcedureObject> _procedureObjects;
+        private static List<StoredProcedure> _procedures;
+        private static Configuration _configuration;
         private static string _proceduresQuery;
+        private static SqlCommand _command;
+        private static ServerConnection _serverConnection;
+        private static Server _server;
+        private static Database _database;
 
+        private void Prepare()
+        {
+            _procedureObjects = new List<ProcedureObject>();
+            _procedures = new List<StoredProcedure>();
+            _configuration = new Configuration();
+            _proceduresQuery = _configuration.GetProceduresQuery();
+            _command = new SqlCommand(_proceduresQuery, _configuration.Connection);
+            _serverConnection = new ServerConnection(_configuration.Connection);
+            _server = new Server(_serverConnection);
+            _database = _server.Databases[_configuration.Connection.Database];
+        }
+        
         static void Main(string[] args)
         {
-            //start
-            ServiceCollection serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
+            ReadProceduresNames(_command);
+            GetProcedures();
+            
+            
+        }
 
-            _connection.Open();
-
-            ConfigureQueries();
-
-            var command = new SqlCommand(_proceduresQuery, _connection);
-
-            var procedureObjects = new List<ProcedureObject>();
-
-            var procedures = new List<StoredProcedure>();
-
+        private static void GetProcedures()
+        {
+            foreach (var procedureObject in _procedureObjects)
+            {
+                _procedures.Add(new StoredProcedure(_database, procedureObject.ProcedureName, procedureObject.SchemaName));
+            }
+        }
+        
+        private static void ReadProceduresNames(SqlCommand command)
+        {
             var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                procedureObjects.Add(new ProcedureObject
+                _procedureObjects.Add(new ProcedureObject
                 (
                     reader["schema"].ToString(),
                     reader["name"].ToString()
@@ -43,46 +62,7 @@ namespace StoredProceduresBackup
             }
 
             reader.Close();
-
-            var srvCon = new ServerConnection(_connection);
-            var server = new Server(srvCon);
-            var dataBase = server.Databases[_connection.Database];
-
-            foreach (var procedureObject in procedureObjects)
-            {
-                procedures.Add(new StoredProcedure(dataBase, procedureObject.ProcedureName,
-                    procedureObject.SchemaName));
-            }
-
-            foreach (var procedure in procedures)
-            {
-                procedure.Refresh();
-                Console.WriteLine(procedure.TextHeader.Replace("CREATE", "ALTER").Replace("create", "ALTER"));
-                Console.WriteLine(procedure.TextBody);
-            }
         }
-
-        private static void ConfigureQueries()
-        {
-            _proceduresQuery =
-                File.ReadAllText(Directory.GetParent(AppContext.BaseDirectory).FullName + "/GetProcedures.sql");
-        }
-
-        private static void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            _configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
-                .AddJsonFile("appsettings.json", false)
-                .Build();
-
-            serviceCollection.AddSingleton(_configuration);
-
-            _connection = new SqlConnection(GetConnectionString());
-        }
-
-        private static string GetConnectionString()
-        {
-            return _configuration.GetConnectionString("MyConnection");
-        }
+        
     }
 }
