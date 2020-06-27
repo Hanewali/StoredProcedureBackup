@@ -41,7 +41,7 @@ namespace StoredProceduresBackup
             {
                 powerShell.AddScript($"cd {Directory}/StoredProcedures/");
                 powerShell.AddScript(@"git add *");
-                powerShell.AddScript($"git commit -m 'Timestamp {DateTime.Now.ToShortDateString()}'");
+                powerShell.AddScript($"git commit -m 'Timestamp {DateTime.Now.ToShortDateString()} {DateTime.Now.Hour}:{DateTime.Now.Minute}'");
                 Collection<PSObject> results = powerShell.Invoke();
             }
         }
