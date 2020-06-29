@@ -58,6 +58,7 @@ namespace StoredProceduresBackup
         
         private static void ReadProceduresNames(SqlCommand command)
         {
+            _procedureObjects = new List<ProcedureObject>();   
             var reader = command.ExecuteReader();
             while (reader.Read())
             {
