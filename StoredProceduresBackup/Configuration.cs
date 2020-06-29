@@ -19,7 +19,6 @@ namespace StoredProceduresBackup
         {
             ServiceCollection serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
-            ConnectionStrings = new List<string>();
         }
 
         private void ConfigureServices(IServiceCollection serviceCollection)

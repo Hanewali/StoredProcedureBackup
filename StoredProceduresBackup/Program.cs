@@ -22,16 +22,17 @@ namespace StoredProceduresBackup
             _procedureObjects = new List<ProcedureObject>();
             _configuration = new Configuration();
             _proceduresQuery = _configuration.GetProceduresQuery();
-            _server = new Server(_serverConnection);
-            _storedProcedures = new StoredProcedures();
         }
 
         private static void PrepareConnection(string connectionString)
         {
             _connection = new SqlConnection(connectionString);
+            _connection.Open();
             _command = new SqlCommand(_proceduresQuery, _connection);
             _serverConnection = new ServerConnection(_connection);
+            _server = new Server(_serverConnection);
             _database = _server.Databases[_connection.Database];
+            _storedProcedures = new StoredProcedures(_database.Name);
         }
         
         static void Main()
@@ -43,7 +44,7 @@ namespace StoredProceduresBackup
                 PrepareConnection(connectionString);
                 ReadProceduresNames(_command);
                 GetProcedures();
-                _storedProcedures.Save();    
+                _storedProcedures.Save(); 
             }
         }
 
