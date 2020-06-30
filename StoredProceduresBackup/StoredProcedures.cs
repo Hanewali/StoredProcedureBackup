@@ -29,6 +29,7 @@ namespace StoredProceduresBackup
 
         private void SaveToFiles()
         {
+            Console.WriteLine($"Saving {DatabaseName} to files...");
             foreach (var procedure in Procedures.Where(x => x.Schema != "sys"))
             {
                 procedure.Refresh();
@@ -50,6 +51,7 @@ namespace StoredProceduresBackup
 
         private void SaveToGit()
         {
+            Console.WriteLine($"Saving {DatabaseName} to git...");
             using var powerShell = PowerShell.Create();
             powerShell.AddScript($"cd {DirectoryPath}/{DatabaseName}");
             powerShell.AddScript(@"git init");
