@@ -50,12 +50,6 @@ namespace StoredProceduresBackup
             
             if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions"))
                 Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions");
-            
-            if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/ScalarFunctions"))
-                Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/ScalarFunctions");
-            
-            if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/TableFunctions"))
-                Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/TableFunctions");
         }
 
         private void SaveFunctionsToFiles()
@@ -64,33 +58,12 @@ namespace StoredProceduresBackup
             {
                 function.Refresh();
                 var content = function.TextHeader + function.TextBody;
-
-                switch (function.FunctionType)
-                {
-                    case UserDefinedFunctionType.Scalar:
-                        if(!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/ScalarFunctions/{function.Schema}"))
-                            Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/ScalarFunctions/{function.Schema}");
-    
-                        var scalarPath =
-                            $"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/ScalarFunctions/{function.Schema}/{function.Name}.sql";
-                        File.WriteAllText(scalarPath, content);
-                        
-                        break;
-                    
-                    case UserDefinedFunctionType.Table:
-                        if(!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/TableFunctions/{function.Schema}"))
-                            Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/TableFunctions/{function.Schema}");
-    
-                        var tablePath =
-                            $"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/TableFunctions/{function.Schema}/{function.Name}.sql";
-                        File.WriteAllText(tablePath, content);
-                        
-                        break;
-                    
-                    case UserDefinedFunctionType.Inline:
-                        Console.WriteLine("eh?");
-                        break;
-                }
+                
+                if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{function.Schema}"))
+                    Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{function.Schema}");
+                
+                var path = $"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{function.Schema}/{function.Name}.sql";
+                File.WriteAllText(path, content);
             }
         }
 
@@ -101,10 +74,10 @@ namespace StoredProceduresBackup
                 procedure.Refresh();
                 var content = procedure.TextHeader + procedure.TextBody;
                 
-                if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/{procedure.Schema}"))
-                    Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/{procedure.Schema}");
+                if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/StoredProcedures/{procedure.Schema}"))
+                    Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/StoredProcedures/{procedure.Schema}");
                 
-                var path = $"{DirectoryPath}/{DatabaseName}/{procedure.Schema}/{procedure.Name}.sql";
+                var path = $"{DirectoryPath}/{DatabaseName}/StoredProcedures/{procedure.Schema}/{procedure.Name}.sql";
                 File.WriteAllText(path, content);
             }
         }
