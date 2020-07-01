@@ -7,7 +7,7 @@ namespace StoredProceduresBackup
 {
     public static class Program
     {
-        private static List<SqlObject> _sqlObjects;
+        private static List<SqlObject> _sqlObjectList;
         private static Configuration _configuration;
         private static string _proceduresQuery;
         private static string _functionsQuery;
@@ -15,15 +15,14 @@ namespace StoredProceduresBackup
         private static ServerConnection _serverConnection;
         private static Server _server;
         private static Database _database;
-        private static StoredProcedures _storedProcedures;
+        private static SqlObjects _sqlObjects;
         private static SqlConnection _connection;
         private static SqlCommand _functionsCommand;
 
         private static void Prepare()
         {
-            _sqlObjects = new List<SqlObject>();
             _configuration = new Configuration();
-            _sqlObjects = new List<SqlObject>();   
+            _sqlObjectList = new List<SqlObject>();   
             _proceduresQuery = _configuration.GetProceduresQuery();
             _functionsQuery = _configuration.GetFunctionsQuery();
         }
@@ -37,7 +36,7 @@ namespace StoredProceduresBackup
             _serverConnection = new ServerConnection(_connection);
             _server = new Server(_serverConnection);
             _database = _server.Databases[_connection.Database];
-            _storedProcedures = new StoredProcedures(_database.Name);
+            _sqlObjects = new SqlObjects(_database.Name);
         }
         
         static void Main()
@@ -50,15 +49,20 @@ namespace StoredProceduresBackup
                 ReadSqlObjects(_proceduresCommand);
                 ReadSqlObjects(_functionsCommand);
                 GetProcedures();
-                _storedProcedures.Save(); 
+                _sqlObjects.Save(); 
             }
         }
 
         private static void GetProcedures()
         {
-            foreach (var procedureObject in _sqlObjects)
+            foreach (var procedureObject in _sqlObjectList)
             {
-                _storedProcedures.Procedures.Add(new StoredProcedure(_database, procedureObject.ProcedureName, procedureObject.SchemaName));
+                _sqlObjects.Procedures.Add(new StoredProcedure(_database, procedureObject.Name, procedureObject.SchemaName));
+            }
+
+            foreach (var functionsObject in _sqlObjectList)
+            {
+                _sqlObjects.Functions.Add(new UserDefinedFunction(_database, functionsObject.Name, functionsObject.SchemaName));
             }
         }
         
@@ -67,7 +71,7 @@ namespace StoredProceduresBackup
             var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                _sqlObjects.Add(new SqlObject
+                _sqlObjectList.Add(new SqlObject
                 (
                     reader["schema"].ToString(),
                     reader["name"].ToString()
