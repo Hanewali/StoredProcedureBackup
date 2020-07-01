@@ -19,6 +19,7 @@ namespace StoredProceduresBackup
         {
             DatabaseName = databaseName;
             Procedures = new List<StoredProcedure>();
+            Functions = new List<UserDefinedFunction>();
             DirectoryPath = Directory.GetParent(AppContext.BaseDirectory).FullName + "/SavedObjects";
         }
 
