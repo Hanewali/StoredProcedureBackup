@@ -7,7 +7,7 @@ namespace StoredProceduresBackup
 {
     public static class Program
     {
-        private static List<SqlObject> _procedureObjects;
+        private static List<SqlObject> _sqlObjects;
         private static Configuration _configuration;
         private static string _proceduresQuery;
         private static SqlCommand _command;
@@ -19,7 +19,7 @@ namespace StoredProceduresBackup
         
         private static void Prepare()
         {
-            _procedureObjects = new List<SqlObject>();
+            _sqlObjects = new List<SqlObject>();
             _configuration = new Configuration();
             _proceduresQuery = _configuration.GetProceduresQuery();
         }
@@ -42,7 +42,7 @@ namespace StoredProceduresBackup
             foreach (var connectionString in _configuration.ConnectionStrings)
             {
                 PrepareConnection(connectionString);
-                ReadProceduresNames(_command);
+                ReadSqlObjects(_command);
                 GetProcedures();
                 _storedProcedures.Save(); 
             }
@@ -50,19 +50,19 @@ namespace StoredProceduresBackup
 
         private static void GetProcedures()
         {
-            foreach (var procedureObject in _procedureObjects)
+            foreach (var procedureObject in _sqlObjects)
             {
                 _storedProcedures.Procedures.Add(new StoredProcedure(_database, procedureObject.ProcedureName, procedureObject.SchemaName));
             }
         }
         
-        private static void ReadProceduresNames(SqlCommand command)
+        private static void ReadSqlObjects(SqlCommand command)
         {
-            _procedureObjects = new List<SqlObject>();   
+            _sqlObjects = new List<SqlObject>();   
             var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                _procedureObjects.Add(new SqlObject
+                _sqlObjects.Add(new SqlObject
                 (
                     reader["schema"].ToString(),
                     reader["name"].ToString()
