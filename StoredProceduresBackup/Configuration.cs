@@ -41,5 +41,10 @@ namespace StoredProceduresBackup
         {
             return File.ReadAllText(Directory.GetParent(AppContext.BaseDirectory).FullName + "/GetProcedures.sql");
         }
+
+        public string GetFunctionsQuery()
+        {
+            return File.ReadAllText(Directory.GetParent(AppContext.BaseDirectory).FullName + "/GetFunctions.sql");
+        }
     }
 }
