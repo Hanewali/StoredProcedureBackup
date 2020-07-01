@@ -3,12 +3,12 @@ namespace StoredProceduresBackup
     public class SqlObject
     {
         public string SchemaName { get; }
-        public string ProcedureName { get; }
+        public string Name { get; }
 
-        public SqlObject(string schemaName, string procedureName)
+        public SqlObject(string schemaName, string name)
         {
             SchemaName = schemaName;
-            ProcedureName = procedureName;
+            Name = name;
         }
     }
 }
