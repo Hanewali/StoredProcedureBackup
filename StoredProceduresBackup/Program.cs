@@ -7,7 +7,7 @@ namespace StoredProceduresBackup
 {
     public static class Program
     {
-        private static List<ProcedureObject> _procedureObjects;
+        private static List<SqlObject> _procedureObjects;
         private static Configuration _configuration;
         private static string _proceduresQuery;
         private static SqlCommand _command;
@@ -19,7 +19,7 @@ namespace StoredProceduresBackup
         
         private static void Prepare()
         {
-            _procedureObjects = new List<ProcedureObject>();
+            _procedureObjects = new List<SqlObject>();
             _configuration = new Configuration();
             _proceduresQuery = _configuration.GetProceduresQuery();
         }
@@ -58,11 +58,11 @@ namespace StoredProceduresBackup
         
         private static void ReadProceduresNames(SqlCommand command)
         {
-            _procedureObjects = new List<ProcedureObject>();   
+            _procedureObjects = new List<SqlObject>();   
             var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                _procedureObjects.Add(new ProcedureObject
+                _procedureObjects.Add(new SqlObject
                 (
                     reader["schema"].ToString(),
                     reader["name"].ToString()
