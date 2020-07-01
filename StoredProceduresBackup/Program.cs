@@ -10,6 +10,7 @@ namespace StoredProceduresBackup
         private static List<SqlObject> _sqlObjects;
         private static Configuration _configuration;
         private static string _proceduresQuery;
+        private static string _functionsQuery;
         private static SqlCommand _command;
         private static ServerConnection _serverConnection;
         private static Server _server;
@@ -22,6 +23,7 @@ namespace StoredProceduresBackup
             _sqlObjects = new List<SqlObject>();
             _configuration = new Configuration();
             _proceduresQuery = _configuration.GetProceduresQuery();
+            _functionsQuery = _configuration.GetFunctionsQuery();
         }
 
         private static void PrepareConnection(string connectionString)
