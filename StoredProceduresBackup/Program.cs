@@ -11,17 +11,19 @@ namespace StoredProceduresBackup
         private static Configuration _configuration;
         private static string _proceduresQuery;
         private static string _functionsQuery;
-        private static SqlCommand _command;
+        private static SqlCommand _proceduresCommand;
         private static ServerConnection _serverConnection;
         private static Server _server;
         private static Database _database;
         private static StoredProcedures _storedProcedures;
         private static SqlConnection _connection;
-        
+        private static SqlCommand _functionsCommand;
+
         private static void Prepare()
         {
             _sqlObjects = new List<SqlObject>();
             _configuration = new Configuration();
+            _sqlObjects = new List<SqlObject>();   
             _proceduresQuery = _configuration.GetProceduresQuery();
             _functionsQuery = _configuration.GetFunctionsQuery();
         }
@@ -30,7 +32,8 @@ namespace StoredProceduresBackup
         {
             _connection = new SqlConnection(connectionString);
             _connection.Open();
-            _command = new SqlCommand(_proceduresQuery, _connection);
+            _proceduresCommand = new SqlCommand(_proceduresQuery, _connection);
+            _functionsCommand = new SqlCommand(_functionsQuery, _connection);
             _serverConnection = new ServerConnection(_connection);
             _server = new Server(_serverConnection);
             _database = _server.Databases[_connection.Database];
@@ -44,7 +47,8 @@ namespace StoredProceduresBackup
             foreach (var connectionString in _configuration.ConnectionStrings)
             {
                 PrepareConnection(connectionString);
-                ReadSqlObjects(_command);
+                ReadSqlObjects(_proceduresCommand);
+                ReadSqlObjects(_functionsCommand);
                 GetProcedures();
                 _storedProcedures.Save(); 
             }
@@ -60,7 +64,6 @@ namespace StoredProceduresBackup
         
         private static void ReadSqlObjects(SqlCommand command)
         {
-            _sqlObjects = new List<SqlObject>();   
             var reader = command.ExecuteReader();
             while (reader.Read())
             {
@@ -70,7 +73,6 @@ namespace StoredProceduresBackup
                     reader["name"].ToString()
                 ));
             }
-
             reader.Close();
         }
     }
