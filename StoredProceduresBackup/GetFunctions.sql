@@ -1,8 +1,6 @@
 ﻿SELECT
-     name AS 'Function Name',
-     SCHEMA_NAME(schema_id) AS 'Schema',
-     type_desc AS 'Function Type', 
-     create_date AS 'Created Date'
+     name AS [name],
+     SCHEMA_NAME(schema_id) AS [schema]
 FROM
      sys.objects
 WHERE
