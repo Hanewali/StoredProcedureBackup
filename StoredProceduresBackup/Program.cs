@@ -38,7 +38,7 @@ namespace StoredProceduresBackup
             _serverConnection = new ServerConnection(_connection);
             _server = new Server(_serverConnection);
             _database = _server.Databases[_connection.Database];
-            _sqlObjects = new SqlObjects(_database.Name);
+            _sqlObjects = new SqlObjects(_database.Name, _configuration.PathToSave);
             _storedProcedures = new List<SqlObject>();
             _userDefinedFunctions = new List<SqlObject>();
         }

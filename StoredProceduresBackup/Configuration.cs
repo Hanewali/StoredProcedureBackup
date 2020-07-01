@@ -14,6 +14,7 @@ namespace StoredProceduresBackup
     {
         private IConfigurationRoot _configuration;
         public List<string> ConnectionStrings;
+        public string PathToSave { get; set; }
 
         public Configuration()
         {
@@ -30,8 +31,15 @@ namespace StoredProceduresBackup
 
             serviceCollection.AddSingleton(_configuration);
             GetConnectionStrings();
+            GetSavePath();
         }
-        
+
+        private void GetSavePath()
+        {
+            PathToSave = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(Directory.GetParent(AppContext.BaseDirectory).FullName + "/appsettings.json")).PathToSaveDirectory;
+        }
+
+
         private void GetConnectionStrings()
         {
             ConnectionStrings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(Directory.GetParent(AppContext.BaseDirectory).FullName + "/appsettings.json")).ConnectionStrings.Values.ToList();
