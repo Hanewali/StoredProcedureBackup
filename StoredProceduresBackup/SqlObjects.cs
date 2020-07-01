@@ -15,12 +15,12 @@ namespace StoredProceduresBackup
         private string DirectoryPath { get; }
         private string DatabaseName { get; }
 
-        public SqlObjects(string databaseName)
+        public SqlObjects(string databaseName, string directoryPath)
         {
             DatabaseName = databaseName;
             Procedures = new List<StoredProcedure>();
             Functions = new List<UserDefinedFunction>();
-            DirectoryPath = Directory.GetParent(AppContext.BaseDirectory).FullName + "/SavedObjects";
+            DirectoryPath = directoryPath;
         }
 
         public void Save()
