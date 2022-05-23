@@ -5,13 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using Microsoft.SqlServer.Management.Smo;
+using StoredProceduresBackup.Dto;
 
 namespace StoredProceduresBackup
 {
     public class SqlObjects
     {
         public List<StoredProcedure> Procedures { get; }
-        public List<UserDefinedFunction> Functions { get; }
+        public List<UserDefinedFunctionWithType> Functions { get; }
         private string DirectoryPath { get; }
         private string DatabaseName { get; }
 
@@ -19,7 +20,7 @@ namespace StoredProceduresBackup
         {
             DatabaseName = databaseName;
             Procedures = new List<StoredProcedure>();
-            Functions = new List<UserDefinedFunction>();
+            Functions = new List<UserDefinedFunctionWithType>();
             DirectoryPath = directoryPath;
         }
 
@@ -50,19 +51,28 @@ namespace StoredProceduresBackup
             
             if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions"))
                 Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions");
+
+            foreach (var type in Functions.Select(x => x.UserDefinedFunctionType).Distinct())
+            {
+                if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{GetFunctionTypeName(type)}"))
+                    Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{GetFunctionTypeName(type)}");
+            }
         }
 
         private void SaveFunctionsToFiles()
         {
-            foreach (var function in Functions.Where(x => x.Schema != "sys"))
+            foreach (var function in Functions.Where(x => x.Function.Schema != "sys"))
             {
-                function.Refresh();
-                var content = function.TextHeader + function.TextBody;
+                function.Function.Refresh();
+                var content = function.Function.TextHeader + function.Function.TextBody;
+
+                var fullDirectoryPath =
+                    $"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{GetFunctionTypeName(function.Function.FunctionType)}/{function.Function.Schema}";
                 
-                if (!Directory.Exists($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{function.Schema}"))
-                    Directory.CreateDirectory($"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{function.Schema}");
+                if (!Directory.Exists(fullDirectoryPath))
+                    Directory.CreateDirectory(fullDirectoryPath);
                 
-                var path = $"{DirectoryPath}/{DatabaseName}/UserDefinedFunctions/{function.Schema}/{function.Name}.sql";
+                var path = $"{fullDirectoryPath}/{function.Function.Name}.sql";
                 File.WriteAllText(path, content);
             }
         }
@@ -91,6 +101,18 @@ namespace StoredProceduresBackup
             powerShell.AddScript(@"git add *");
             powerShell.AddScript($"git commit -m 'Timestamp {DateTime.Now.ToShortDateString()} {DateTime.Now.Hour}:{DateTime.Now.Minute}'");
             powerShell.Invoke();
+        }
+
+        private string GetFunctionTypeName(UserDefinedFunctionType type)
+        {
+            return type switch
+            {
+                UserDefinedFunctionType.Inline => "Inline_Table_Function",
+                UserDefinedFunctionType.Scalar => "Scalar_Function",
+                UserDefinedFunctionType.Table => "Multiline_Table_Function",
+                UserDefinedFunctionType.Unknown => "Unknown_Function",
+                _ => "Unknown_Function"
+            };
         }
     }
 }

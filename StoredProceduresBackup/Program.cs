@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
+using StoredProceduresBackup.Dto;
 
 namespace StoredProceduresBackup
 {
@@ -42,7 +43,7 @@ namespace StoredProceduresBackup
             _storedProcedures = new List<SqlObject>();
             _userDefinedFunctions = new List<SqlObject>();
         }
-        
+
         static void Main()
         {
             Prepare();
@@ -52,26 +53,35 @@ namespace StoredProceduresBackup
                 PrepareConnection(connectionString);
                 ReadStoredProcedures(_proceduresCommand);
                 ReadUserDefinedFunctions(_functionsCommand);
-                GetProcedures();
-                _sqlObjects.Save(); 
+                GetProceduresAndFunctionsContent();
+                _sqlObjects.Save();
             }
         }
 
-        
-
-        private static void GetProcedures()
+        private static void GetProceduresAndFunctionsContent()
         {
             foreach (var procedureObject in _storedProcedures)
             {
-                _sqlObjects.Procedures.Add(new StoredProcedure(_database, procedureObject.Name, procedureObject.SchemaName));
+                _sqlObjects.Procedures.Add(new StoredProcedure(_database, procedureObject.Name,
+                    procedureObject.SchemaName));
             }
 
             foreach (var functionsObject in _userDefinedFunctions)
             {
-                _sqlObjects.Functions.Add(new UserDefinedFunction(_database, functionsObject.Name, functionsObject.SchemaName));
+                var function = new UserDefinedFunctionWithType(
+                    function: new UserDefinedFunction(_database, functionsObject.Name, functionsObject.SchemaName),
+                    type: functionsObject.Type switch
+                    {
+                        "IF" => UserDefinedFunctionType.Inline,
+                        "TF" => UserDefinedFunctionType.Table,
+                        "FN" => UserDefinedFunctionType.Scalar,
+                        _ => UserDefinedFunctionType.Unknown
+                    });
+
+                _sqlObjects.Functions.Add(function);
             }
         }
-        
+
         private static void ReadStoredProcedures(SqlCommand command)
         {
             var reader = command.ExecuteReader();
@@ -83,9 +93,10 @@ namespace StoredProceduresBackup
                     reader["name"].ToString()
                 ));
             }
+
             reader.Close();
         }
-        
+
         private static void ReadUserDefinedFunctions(SqlCommand command)
         {
             var reader = command.ExecuteReader();
@@ -94,9 +105,11 @@ namespace StoredProceduresBackup
                 _userDefinedFunctions.Add(new SqlObject
                 (
                     reader["schema"].ToString(),
-                    reader["name"].ToString()
+                    reader["name"].ToString(),
+                    reader["type"].ToString()
                 ));
             }
+
             reader.Close();
         }
     }

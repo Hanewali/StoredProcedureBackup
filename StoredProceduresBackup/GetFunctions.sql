@@ -1,7 +1,8 @@
 ﻿SELECT
-     name AS [name],
+    name AS [name],
+	 type AS [type],
      SCHEMA_NAME(schema_id) AS [schema]
 FROM
-     sys.objects
+    sys.objects
 WHERE
-     type in ('FN', 'IF', 'FN', 'AF', 'FS', 'FT');
+    type in ('IF', 'FN', 'AF', 'TF');
